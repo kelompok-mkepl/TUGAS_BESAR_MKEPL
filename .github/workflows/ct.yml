@@ -1,4 +1,4 @@
-name: Continiuous Testing - Junit
+name: Continuous Testing - JUnit
 
 on:
   push:
@@ -29,17 +29,15 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: verify Maven Installation
+      - name: Verify Maven Installation
         run: mvn -version
 
-      - name: run unit tests
+      - name: Run Unit Tests
         run: mvn clean test
 
-      - name: upload surefire reports
-        if : always()
-        uses: actions/upload-artifact@v3
+      - name: Upload Surefire Reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: target/surefire-reports
-
-      - name: Run Tests
-        run: mvn test
+          name: surefire-reports
+          path: target/surefire-reports/
