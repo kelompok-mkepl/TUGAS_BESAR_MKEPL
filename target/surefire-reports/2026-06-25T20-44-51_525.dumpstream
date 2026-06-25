@@ -1,4 +1,4 @@
-# Created at 2026-06-25T20:16:43.479
+# Created at 2026-06-25T20:44:51.642
 Boot Manifest-JAR contains absolute paths in classpath 'D:\Perkuliahan\MKEPL\New Clone\TUGAS_BESAR_DPBO\target\test-classes'
 Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
 'other' has different root
