@@ -1,0 +1,87 @@
+name: Continuous Inspection - SonarCloud
+
+on:
+  workflow_run:
+    workflows:
+      - Continuous Testing - JUnit
+    types:
+      - completed
+    branches:
+      - dev
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  JAVA_VERSION: '17'
+  SONAR_PROJECT_KEY: aditya-0122_TUGAS_BESAR_MKEPL
+  SONAR_ORGANIZATION: aditya-0122
+  SONAR_HOST_URL: https://sonarcloud.io
+
+jobs:
+  sonarcloud:
+    name: Run SonarCloud Static Analysis
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Checkout Repository from Workflow Run
+        if: github.event_name == 'workflow_run'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Checkout Repository Manually
+        if: github.event_name != 'workflow_run'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build and Generate Reports for SonarCloud
+        run: mvn -B clean verify
+
+      - name: Validate SonarCloud Token
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN is empty or not found"
+            exit 1
+          fi
+
+          SONAR_TOKEN_CLEAN=$(printf "%s" "$SONAR_TOKEN" | tr -d '\r\n')
+
+          echo "Checking whether SONAR_TOKEN is valid..."
+          curl -s -u "$SONAR_TOKEN_CLEAN:" "$SONAR_HOST_URL/api/authentication/validate"
+          echo ""
+
+          echo "Checking whether token can access the SonarCloud project..."
+          curl -s -u "$SONAR_TOKEN_CLEAN:" "$SONAR_HOST_URL/api/components/show?component=$SONAR_PROJECT_KEY"
+          echo ""
+
+      - name: Run SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=aditya-0122_TUGAS_BESAR_MKEPL
+            -Dsonar.organization=aditya-0122
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.sources=src/main/java
+            -Dsonar.tests=src/test/java
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.junit.reportPaths=target/surefire-reports
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml

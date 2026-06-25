@@ -1,43 +1,45 @@
 name: Continuous Testing - JUnit
 
 on:
-  push:
-    branches:
-      - dev
-      - main
+push:
+branches:
+- dev
+- main
 
-  pull_request:
-    branches:
-      - dev
-      - main
+pull_request:
+branches:
+- dev
+- main
 
-  workflow_dispatch:
+workflow_dispatch:
 
 jobs:
-  test:
-    name: Run JUnit Tests
-    runs-on: ubuntu-latest
+test:
+name: Run JUnit Tests
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+```
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: maven
+  - name: Set up Java 17
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
+      cache: maven
 
-      - name: Verify Maven Installation
-        run: mvn -version
+  - name: Verify Maven Installation
+    run: mvn -version
 
-      - name: Run Unit Tests
-        run: mvn clean test
+  - name: Run Unit Tests
+    run: mvn clean test
 
-      - name: Upload Surefire Reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: surefire-reports
-          path: target/surefire-reports/
+  - name: Upload Surefire Reports
+    if: always()
+    uses: actions/upload-artifact@v4
+    with:
+      name: surefire-reports
+      path: target/surefire-reports/
+
